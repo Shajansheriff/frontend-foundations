@@ -7,6 +7,9 @@ export type Question = {
   order: number;
   question: string;
   answer: string;
+  connect?: string;
+  example?: string;
+  interview?: string;
   hook?: string;
   code?: string;
 };
@@ -35,23 +38,31 @@ function splitFrontmatter(raw: string) {
   return { data, content: match[2] };
 }
 
+function readField(rest: string, label: string) {
+  const labels = 'Answer|Connect|Example|Interview|Remember';
+  const withoutCode = rest.replace(/```[\s\S]*?```/g, '\n[[CODE]]');
+  const re = new RegExp(`\\*\\*${label}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*(?:${labels}):\\*\\*|\\n\\[\\[CODE\\]\\]|$)`);
+  return withoutCode.match(re)?.[1].trim();
+}
+
 function parseQuestions(body: string, category: string, order: number): Question[] {
   const blocks = body.split(/^## /gm).slice(1);
   return blocks.map((block, index) => {
     const lines = block.trim().split('\n');
     const question = lines.shift()?.trim() ?? '';
     const rest = lines.join('\n').trim();
-    const answerMatch = rest.match(/\*\*Answer:\*\*\s*([\s\S]*?)(?=\n\*\*Remember:\*\*|\n```|$)/);
-    const hookMatch = rest.match(/\*\*Remember:\*\*\s*([^\n]+)/);
-    const codeMatch = rest.match(/```(?:js|jsx|ts|tsx|html|css)?\n([\s\S]*?)```/);
+    const codeMatch = rest.match(/```(?:js|jsx|ts|tsx|html|css|bash)?\n([\s\S]*?)```/);
 
     return {
       id: `${order}-${index + 1}`,
       category,
       order: index + 1,
       question,
-      answer: answerMatch?.[1].trim() ?? rest,
-      hook: hookMatch?.[1].trim(),
+      answer: readField(rest, 'Answer') ?? rest,
+      connect: readField(rest, 'Connect'),
+      example: readField(rest, 'Example'),
+      interview: readField(rest, 'Interview'),
+      hook: readField(rest, 'Remember'),
       code: codeMatch?.[1].trim(),
     };
   });

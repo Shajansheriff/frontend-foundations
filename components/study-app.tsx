@@ -35,7 +35,7 @@ export function StudyApp({ categories }: { categories: Category[] }) {
     const needle = query.toLowerCase().trim();
     return allQuestions.filter((q) => {
       const categoryMatch = category === 'all' || q.category === category;
-      const searchMatch = !needle || `${q.question} ${q.answer} ${q.hook ?? ''}`.toLowerCase().includes(needle);
+      const searchMatch = !needle || `${q.question} ${q.answer} ${q.connect ?? ''} ${q.example ?? ''} ${q.interview ?? ''} ${q.hook ?? ''}`.toLowerCase().includes(needle);
       const current = progress[q.id];
       const statusMatch =
         status === 'all' ||
@@ -73,7 +73,7 @@ export function StudyApp({ categories }: { categories: Category[] }) {
         <div>
           <p className="eyebrow">SENIOR FRONTEND INTERVIEW PREP</p>
           <h1>Frontend Foundations</h1>
-          <p className="subtitle">Short answers. Strong concepts. Built for fast interview recall.</p>
+          <p className="subtitle">Understand the concept first. Then learn the interview-sized answer.</p>
         </div>
         <button className="drillButton" onClick={randomQuestion}>Random drill →</button>
       </header>
@@ -166,9 +166,30 @@ function QuestionCard({
       </button>
       {isOpen && (
         <div className="answer">
-          <p>{question.answer}</p>
-          {question.hook && <p className="hook"><strong>Remember:</strong> {question.hook}</p>}
+          <section className="answerSection">
+            <span className="answerLabel">Core idea</span>
+            <p>{question.answer}</p>
+          </section>
+          {question.connect && (
+            <section className="answerSection connectSection">
+              <span className="answerLabel">Connect the dots</span>
+              <p>{question.connect}</p>
+            </section>
+          )}
+          {question.example && (
+            <section className="answerSection exampleSection">
+              <span className="answerLabel">Example</span>
+              <p>{question.example}</p>
+            </section>
+          )}
           {question.code && <pre><code>{question.code}</code></pre>}
+          {question.interview && (
+            <section className="answerSection interviewSection">
+              <span className="answerLabel">Say this in an interview</span>
+              <p>{question.interview}</p>
+            </section>
+          )}
+          {question.hook && <p className="hook"><strong>Remember:</strong> {question.hook}</p>}
           <div className="actions">
             <button className={state === 'learning' ? 'active' : ''} onClick={onLearning}>Needs practice</button>
             <button className={state === 'mastered' ? 'active' : ''} onClick={onMastered}>Got it ✓</button>
